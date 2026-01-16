@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { pipeline, env } from '@huggingface/transformers';
 import type { ClassificationResult, LoadingState, ProgressInfo, DeviceType } from '../types';
 
-// Configure transformers.js to allow local models
+// Configure transformers.js
 env.allowLocalModels = false;
 
 interface UseClassifierOptions {
@@ -94,6 +94,7 @@ export function useClassifier(options: UseClassifierOptions): UseClassifierResul
           status: `Loading model with ${device.toUpperCase()}...`,
         }));
 
+        // Use the pipeline API for zero-shot image classification
         const classifier = await pipeline(
           'zero-shot-image-classification',
           modelId,

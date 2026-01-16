@@ -6,7 +6,7 @@ Real-time webcam image classification using WebGPU-accelerated ML inference in t
 
 - **Framework**: Vite + React 18 + TypeScript
 - **ML Library**: @huggingface/transformers v3
-- **Model**: onnx-community/siglip2-base-patch16-naflex-256 (SigLIP2 with NaFlex)
+- **Model**: onnx-community/siglip2-base-patch16-naflex-ONNX (SigLIP2 with NaFlex)
 - **Webcam**: react-webcam with `facingMode: "environment"`
 - **Acceleration**: WebGPU with WASM fallback
 
@@ -46,17 +46,21 @@ src/
 ## Configuration
 
 ### Classification Labels
+
 Edit labels in `src/components/WebcamClassifier.tsx`:
+
 ```typescript
-const LABELS = ['a person', 'a dog', 'a sunset', 'a plant'];
+const LABELS = ["a person", "a dog", "a sunset", "a plant"];
 ```
 
 ### Model
+
 ```typescript
-const MODEL_ID = 'onnx-community/siglip2-base-patch16-naflex-256';
+const MODEL_ID = "onnx-community/siglip2-base-patch16-naflex-256";
 ```
 
 ### Capture Interval
+
 ```typescript
 const CAPTURE_INTERVAL_MS = 500;
 ```
@@ -77,14 +81,18 @@ npm run dev
 ## Architecture Notes
 
 ### COOP/COEP Headers
+
 Required for SharedArrayBuffer (ONNX Runtime). Configured in `vite.config.ts`:
+
 ```typescript
-res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
 ```
 
 ### NaFlex Aspect Ratio
+
 Frames are captured at native aspect ratio (scaled down to ~320px width) instead of 224x224 square. The SigLIP2 NaFlex model handles variable aspect ratios.
 
 ### Device Fallback
+
 If WebGPU is unavailable, automatically falls back to WASM backend.

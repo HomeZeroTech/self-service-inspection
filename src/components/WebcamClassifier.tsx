@@ -8,7 +8,9 @@ import { ClassificationOverlay } from './ClassificationOverlay';
 import { DeviceCompatibility } from './DeviceCompatibility';
 
 const LABELS = ['a person', 'a dog', 'a sunset', 'a plant'];
-const MODEL_ID = 'onnx-community/siglip2-base-patch16-naflex-256';
+// Note: NaFlex model only has vision encoder exported, not suitable for zero-shot classification
+// Using standard SigLIP model which has full model.onnx (vision + text encoders)
+const MODEL_ID = 'Xenova/siglip-base-patch16-224';
 const CAPTURE_INTERVAL_MS = 500;
 
 export function WebcamClassifier() {
