@@ -146,30 +146,82 @@ async function classify(imageDataUrl: string) {
     const imageInputs = await processor(image);
 
     // Get image embedding
-    const { image_embeds } = await visionModel(imageInputs);
-    const imageEmbedding = image_embeds.data as Float32Array;
+    const output = await visionModel(imageInputs);
+    const imageEmbedData = output.image_embeds;
+
+    // Debug: log the shape and type
+    console.log('image_embeds dims:', imageEmbedData.dims);
+    console.log('image_embeds type:', imageEmbedData.type);
+
+    // The output is a Tensor - convert to array
+    // Use tolist() to get a proper JS array, then flatten if needed
+    let rawData: number[];
+    if (typeof imageEmbedData.tolist === 'function') {
+      const listed = imageEmbedData.tolist();
+      // If it's nested (e.g., [[...512 values...]]), flatten it
+      rawData = Array.isArray(listed[0]) ? listed[0] : listed;
+    } else {
+      rawData = Array.from(imageEmbedData.data as Float32Array);
+    }
+
+    console.log('rawData length:', rawData.length);
+    console.log('expected embeddingDim:', embeddingDim);
+    console.log('first 5 values:', rawData.slice(0, 5));
+
+    // If the embedding dimension doesn't match, we might have the wrong shape
+    // Take only the first embeddingDim values (in case of batch dimension)
+    const imageEmbedding: number[] =
+      rawData.length === embeddingDim ? rawData : rawData.slice(0, embeddingDim);
 
     // Normalize image embedding
     let imageNorm = 0;
-    for (let i = 0; i < imageEmbedding.length; i++) {
+    for (let i = 0; i < embeddingDim; i++) {
       imageNorm += imageEmbedding[i] * imageEmbedding[i];
     }
     imageNorm = Math.sqrt(imageNorm);
 
+    console.log('imageNorm:', imageNorm);
+
+    if (imageNorm === 0) {
+      console.error('Image embedding norm is zero');
+      return;
+    }
+
     // Compute cosine similarities with all label embeddings
-    const scores: { label: string; score: number }[] = [];
+    // Text embeddings are pre-normalized (norm=1), so we just need to normalize the image embedding
+    const rawScores: number[] = [];
 
     for (let i = 0; i < labelNames.length; i++) {
       let dotProduct = 0;
       for (let j = 0; j < embeddingDim; j++) {
-        dotProduct +=
-          (imageEmbedding[j] / imageNorm) * labelEmbeddingMatrix![i * embeddingDim + j];
+        const normalizedImageVal = imageEmbedding[j] / imageNorm;
+        const labelVal = labelEmbeddingMatrix![i * embeddingDim + j];
+        dotProduct += normalizedImageVal * labelVal;
       }
-      scores.push({
-        label: labelNames[i],
-        score: dotProduct,
-      });
+      rawScores.push(dotProduct);
     }
+
+    // Apply CLIP's temperature scaling (logit_scale) and softmax
+    // CLIP uses exp(logit_scale) ≈ 100 as temperature
+    const temperature = 100;
+    const scaledScores = rawScores.map((s) => s * temperature);
+
+    // Softmax to convert to probabilities
+    const maxScore = Math.max(...scaledScores);
+    const expScores = scaledScores.map((s) => Math.exp(s - maxScore)); // subtract max for numerical stability
+    const sumExp = expScores.reduce((a, b) => a + b, 0);
+    const probabilities = expScores.map((e) => e / sumExp);
+
+    const scores = labelNames.map((label, i) => ({
+      label,
+      score: probabilities[i],
+    }));
+
+    // Debug: log scores
+    console.log(
+      'scores:',
+      scores.map((s) => `${s.label}: ${(s.score * 100).toFixed(1)}%`)
+    );
 
     // Sort by score and take top 3
     const sorted = scores.sort((a, b) => b.score - a.score).slice(0, 3);
