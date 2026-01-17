@@ -95,12 +95,13 @@ export function useClassifier(options: UseClassifierOptions): UseClassifierResul
         }));
 
         // Use the pipeline API for zero-shot image classification
+        // Use int8 quantization - vision (88MB) + text (64MB) = ~153MB total
         const classifier = await pipeline(
           'zero-shot-image-classification',
           modelId,
           {
             device,
-            dtype: device === 'webgpu' ? 'fp32' : 'q8',
+            dtype: 'int8',
             progress_callback: progressCallback,
           }
         );

@@ -1,17 +1,23 @@
 import { useRef, useCallback, useState } from 'react';
 import Webcam from 'react-webcam';
 import { useDeviceCapabilities } from '../hooks/useDeviceCapabilities';
-import { useClassifier } from '../hooks/useClassifier';
+import { useVisionClassifier } from '../hooks/useVisionClassifier';
 import { useFrameCapture } from '../hooks/useFrameCapture';
 import { LoadingProgress } from './LoadingProgress';
 import { ClassificationOverlay } from './ClassificationOverlay';
 import { DeviceCompatibility } from './DeviceCompatibility';
+import { getEmbeddingsForLabels } from '../data/labelEmbeddings';
 
-const LABELS = ['a person', 'a dog', 'a sunset', 'a plant'];
-// Note: NaFlex model only has vision encoder exported, not suitable for zero-shot classification
-// Using standard SigLIP model which has full model.onnx (vision + text encoders)
-const MODEL_ID = 'Xenova/siglip-base-patch16-224';
+// Labels for classification - must have pre-computed embeddings
+// Run `npx tsx scripts/generate-embeddings.ts` to add new labels
+const LABELS = ['a person', 'a radiator', 'an electricity meter', 'a boiler'];
+
+// Using CLIP ViT-base-patch32 vision model only (~88MB)
+const MODEL_ID = 'Xenova/clip-vit-base-patch32';
 const CAPTURE_INTERVAL_MS = 500;
+
+// Get pre-computed embeddings for our labels
+const LABEL_EMBEDDINGS = getEmbeddingsForLabels(LABELS);
 
 export function WebcamClassifier() {
   const webcamRef = useRef<Webcam>(null);
@@ -19,10 +25,12 @@ export function WebcamClassifier() {
   const [webcamReady, setWebcamReady] = useState(false);
   const [webcamError, setWebcamError] = useState<string | null>(null);
 
-  const { loadingState, results, classify, isInferring, isReady } = useClassifier({
+  // Use vision-only classifier with pre-computed text embeddings
+  const { loadingState, results, classify, isInferring, isReady } = useVisionClassifier({
     modelId: MODEL_ID,
     device: recommendedDevice,
     labels: LABELS,
+    labelEmbeddings: LABEL_EMBEDDINGS,
   });
 
   const handleFrame = useCallback(
