@@ -1,6 +1,6 @@
 import {
   AutoProcessor,
-  CLIPVisionModelWithProjection,
+  SiglipVisionModel,
   RawImage,
   env,
 } from '@huggingface/transformers';
@@ -55,12 +55,11 @@ interface ClassificationResult {
 type WorkerResponse = ProgressUpdate | ReadyUpdate | ErrorUpdate | ClassificationResult;
 
 // Model state
-let processor: Awaited<ReturnType<typeof AutoProcessor.from_pretrained>> | null = null;
-let visionModel: Awaited<ReturnType<typeof CLIPVisionModelWithProjection.from_pretrained>> | null =
-  null;
+let processor: any = null;
+let visionModel: any = null;
 let labelEmbeddingMatrix: Float32Array | null = null;
 let labelNames: string[] = [];
-let embeddingDim = 512;
+let embeddingDim = 768; // SigLIP2 base uses 768
 let isInitialized = false;
 let isInitializing = false;
 
@@ -110,14 +109,14 @@ async function initialize(data: InitMessage) {
       });
     };
 
-    postMessage({ type: 'progress', status: 'initiate', file: 'Loading processor...' });
-
-    // Load processor and vision model
+    // Load processor and vision-only model
+    // Using the 224-fixed resolution model which has better compatibility
+    // with current Transformers.js version (uses standard SiglipImageProcessor)
     const [loadedProcessor, loadedVisionModel] = await Promise.all([
       AutoProcessor.from_pretrained(modelId),
-      CLIPVisionModelWithProjection.from_pretrained(modelId, {
+      SiglipVisionModel.from_pretrained(modelId, {
         device,
-        dtype: 'q8',
+        dtype: 'q8', // Using q8 (int8) for 224 model
         progress_callback: progressCallback,
       }),
     ]);
@@ -145,9 +144,23 @@ async function classify(imageDataUrl: string) {
     const image = await RawImage.fromURL(imageDataUrl);
     const imageInputs = await processor(image);
 
-    // Get image embedding
+    // Get image embedding from SiglipVisionModel
     const output = await visionModel(imageInputs);
-    const imageEmbedData = output.image_embeds;
+
+    // List available output keys for debugging
+    console.log('Model output keys:', Object.keys(output));
+
+    // SiglipVisionModel usually outputs pooler_output (projected embedding)
+    // Some models might use image_embeds
+    const imageEmbedData = output.pooler_output || output.image_embeds;
+
+    if (!imageEmbedData) {
+      console.error('No embedding found in model output. Available keys:', Object.keys(output));
+      return;
+    }
+
+    console.log('imageEmbedData:', imageEmbedData);
+    console.log('imageEmbedData dims:', imageEmbedData?.dims);
 
     // The output is a Tensor - convert to array
     // Use tolist() to get a proper JS array, then flatten if needed
@@ -165,6 +178,11 @@ async function classify(imageDataUrl: string) {
     const imageEmbedding: number[] =
       rawData.length === embeddingDim ? rawData : rawData.slice(0, embeddingDim);
 
+    console.log('rawData length:', rawData.length);
+    console.log('embeddingDim:', embeddingDim);
+    console.log('imageEmbedding length:', imageEmbedding.length);
+    console.log('first 5 values:', imageEmbedding.slice(0, 5));
+
     // Normalize image embedding
     let imageNorm = 0;
     for (let i = 0; i < embeddingDim; i++) {
@@ -172,13 +190,14 @@ async function classify(imageDataUrl: string) {
     }
     imageNorm = Math.sqrt(imageNorm);
 
+    console.log('imageNorm:', imageNorm);
+
     if (imageNorm === 0) {
       console.error('Image embedding norm is zero');
       return;
     }
 
-    // Compute cosine similarities with all label embeddings
-    // Text embeddings are pre-normalized (norm=1), so we just need to normalize the image embedding
+    // Compute cosine similarities (dot product since normalized)
     const rawScores: number[] = [];
 
     for (let i = 0; i < labelNames.length; i++) {
@@ -191,16 +210,19 @@ async function classify(imageDataUrl: string) {
       rawScores.push(dotProduct);
     }
 
-    // Apply CLIP's temperature scaling (logit_scale) and softmax
-    // CLIP uses exp(logit_scale) ≈ 100 as temperature
-    const temperature = 100;
-    const scaledScores = rawScores.map((s) => s * temperature);
+    // For SigLIP 2, we can use softmax over the labels for zero-shot classification 
+    // to get better relative confidence scores.
+    // The scale in SigLIP models is usually quite high (~40-100+).
+    // Using 100.0 to provide higher confidence for clear matches.
+    const logitScale = visionModel.config?.logit_scale ?? 100.0;
+    
+    // Some models store log(scale), some store scale directly
+    const actualScale = logitScale < 5 ? Math.exp(logitScale) : logitScale;
 
-    // Softmax to convert to probabilities
-    const maxScore = Math.max(...scaledScores);
-    const expScores = scaledScores.map((s) => Math.exp(s - maxScore)); // subtract max for numerical stability
-    const sumExp = expScores.reduce((a, b) => a + b, 0);
-    const probabilities = expScores.map((e) => e / sumExp);
+    // Softmax calculation
+    const expScores = rawScores.map(score => Math.exp(score * actualScale));
+    const totalScore = expScores.reduce((a, b) => a + b, 0);
+    const probabilities = expScores.map(s => s / totalScore);
 
     const scores = labelNames.map((label, i) => ({
       label,

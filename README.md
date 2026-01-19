@@ -17,14 +17,15 @@ Point your camera at objects and the app classifies them in real-time. Built for
 
 ## Model
 
-- **Xenova/clip-vit-base-patch32** (~88MB download)
-- CLIP vision encoder with pre-computed text embeddings
+- **onnx-community/siglip2-base-patch16-224-ONNX** (~95MB download)
+- SigLIP2 vision encoder with pre-computed text embeddings
+- Better accuracy than CLIP for fine-grained classification
 - Runs entirely in-browser using WebGPU (falls back to WASM)
 
 ## How It Works
 
 1. Text embeddings for labels are pre-computed at build time
-2. Only the vision model downloads at runtime (~88MB vs ~153MB for full CLIP)
+2. Only the vision model downloads at runtime (~95MB vs ~378MB for full SigLIP2)
 3. Inference runs in a Web Worker to keep UI smooth
 4. Frames captured every 500ms and classified
 
@@ -44,12 +45,12 @@ To add new labels:
 
 ## Score Interpretation
 
-CLIP scores are probability distributions across labels:
-- 50-70% = strong match
+SigLIP2 scores are probability distributions across labels:
+- 50-80% = strong match
 - 20-40% = possible match
 - <20% = unlikely
 
-Scores won't reach 100% because probability is distributed across all candidates.
+Scores won't reach 100% because probability is distributed across all candidates. SigLIP2 generally produces more confident scores than CLIP.
 
 ## Requirements
 

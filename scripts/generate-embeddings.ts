@@ -2,19 +2,22 @@
  * Script to pre-compute text embeddings for classification labels.
  * Run with: npx tsx scripts/generate-embeddings.ts
  *
- * This generates embeddings once, so at runtime we only need the vision model (~88MB)
- * instead of both vision + text models (~153MB).
+ * This generates embeddings once, so at runtime we only need the vision model (~95MB)
+ * instead of both vision + text models (~378MB).
  */
 
-import { AutoTokenizer, CLIPTextModelWithProjection } from '@huggingface/transformers';
+import { AutoTokenizer, SiglipTextModel } from '@huggingface/transformers';
 
-const MODEL_ID = 'Xenova/clip-vit-base-patch32';
+// SigLIP2 base model - 224 fixed resolution
+const MODEL_ID = 'onnx-community/siglip2-base-patch16-224-ONNX';
+const TEXT_MODEL_ID = MODEL_ID;
 
 // All possible labels for home inspection
 // Add all labels that will be used across all inspection steps
 const ALL_LABELS = [
   // Heating
   'a radiator',
+  'a white metal radiator',
   'a wall-mounted radiator',
   'a floor-mounted radiator',
   'a towel radiator',
@@ -22,6 +25,7 @@ const ALL_LABELS = [
 
   // Meters and utilities
   'an electricity meter',
+  'an electricity meter on a wall',
   'a smart meter',
   'a gas meter',
   'a meter box',
@@ -31,6 +35,7 @@ const ALL_LABELS = [
 
   // Water heating
   'a boiler',
+  'a gas boiler unit',
   'a combi boiler',
   'a water heater',
   'a hot water cylinder',
@@ -58,10 +63,10 @@ const ALL_LABELS = [
 ];
 
 async function generateEmbeddings() {
-  console.log('Loading tokenizer and text model...');
+  console.log('Loading tokenizer and text model for:', MODEL_ID);
 
-  const tokenizer = await AutoTokenizer.from_pretrained(MODEL_ID);
-  const textModel = await CLIPTextModelWithProjection.from_pretrained(MODEL_ID, {
+  const tokenizer = await AutoTokenizer.from_pretrained(TEXT_MODEL_ID);
+  const textModel = await SiglipTextModel.from_pretrained(TEXT_MODEL_ID, {
     dtype: 'q8',
   });
 
@@ -70,17 +75,18 @@ async function generateEmbeddings() {
   const embeddings: Record<string, number[]> = {};
 
   for (const label of ALL_LABELS) {
-    // CLIP uses "a photo of {label}" template
-    const text = `a photo of ${label}`;
-    const inputs = await tokenizer(text, { padding: true, truncation: true });
+    // SigLIP2 uses lowercase text and max_length=64
+    const text = label.toLowerCase();
+    const inputs = await tokenizer(text, { padding: 'max_length', max_length: 64, truncation: true });
+    
     const output = await textModel(inputs);
 
-    // Get the text embedding and convert to array
-    const embedding = Array.from(output.text_embeds.data as Float32Array);
+    // Get the pooled output embedding and convert to array
+    const embedding = Array.from(output.pooler_output.data as Float32Array);
 
-    // Normalize the embedding (CLIP embeddings should be normalized for cosine similarity)
+    // Normalize the embedding for cosine similarity
     const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-    const normalizedEmbedding = embedding.map(val => val / norm);
+    const normalizedEmbedding = embedding.map((val) => val / norm);
 
     embeddings[label] = normalizedEmbedding;
     console.log(`  ✓ ${label}`);
@@ -106,8 +112,8 @@ async function generateEmbeddings() {
  * Generated using: npx tsx scripts/generate-embeddings.ts
  * Generated at: ${output.generatedAt}
  *
- * This allows us to load only the vision model (~88MB) at runtime
- * instead of both vision + text models (~153MB).
+ * This allows us to load only the vision model (~95MB) at runtime
+ * instead of both vision + text models (~378MB).
  *
  * IMPORTANT: Re-generate this file if you add new labels!
  */
@@ -137,4 +143,7 @@ export function getEmbeddingsForLabels(labels: string[]): Record<string, number[
   console.log(`\n✓ Written to ${outputPath}`);
 }
 
-generateEmbeddings().catch(console.error);
+generateEmbeddings().catch((err) => {
+  console.error('FULL ERROR:', err);
+  process.exit(1);
+});

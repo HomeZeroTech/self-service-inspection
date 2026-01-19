@@ -6,13 +6,13 @@ Real-time webcam image classification using WebGPU-accelerated ML inference in t
 
 - **Framework**: Vite + React 18 + TypeScript
 - **ML Library**: @huggingface/transformers v3
-- **Model**: Xenova/clip-vit-base-patch32 (CLIP ViT-base, ~88MB vision model)
+- **Model**: onnx-community/siglip2-base-patch16-224-ONNX (SigLIP2, ~95MB vision model)
 - **Webcam**: react-webcam with `facingMode: "environment"`
 - **Acceleration**: WebGPU with WASM fallback
 
 ## Key Features
 
-- **Vision-only inference** - Pre-computed text embeddings reduce model size from ~153MB to ~88MB
+- **Vision-only inference** - Pre-computed text embeddings reduce model size from ~378MB to ~95MB
 - **Web Worker** - ML inference runs off main thread for smooth UI
 - **WebGPU acceleration** - Fast inference on supported browsers
 - **Progress callback** - Shows model download progress
@@ -55,14 +55,14 @@ scripts/
 
 ### Vision-Only Approach
 
-Instead of loading both CLIP vision and text models (~153MB total), we:
+Instead of loading both SigLIP2 vision and text models (~378MB total), we:
 
 1. **Pre-compute text embeddings** at build time using `scripts/generate-embeddings.ts`
 2. **Store embeddings** in `src/data/labelEmbeddings.ts`
-3. **Load only vision model** at runtime (~88MB)
+3. **Load only vision model** at runtime (~95MB)
 4. **Compare embeddings** using cosine similarity with temperature scaling
 
-This reduces download size by ~40% while maintaining classification accuracy.
+This reduces download size by ~75% while maintaining classification accuracy.
 
 ### Web Worker Pattern
 
@@ -72,14 +72,14 @@ The ML inference runs in a Web Worker (`visionClassifier.worker.ts`) to keep the
 - Message-based communication for init and classify operations
 - Progress callbacks for model download status
 
-### CLIP Score Interpretation
+### SigLIP2 Score Interpretation
 
-CLIP produces cosine similarity scores typically in the range of 0.18-0.30. These raw scores are:
+SigLIP2 produces cosine similarity scores that are converted to probabilities:
 
-1. Scaled by temperature (100x, matching CLIP's logit_scale)
+1. Scaled by temperature (~10x for SigLIP2)
 2. Converted to probabilities via softmax
 
-A "match" typically shows 50-70% probability, not 100%. This is expected behavior.
+A "match" typically shows 50-80% probability, not 100%. This is expected behavior. SigLIP2 generally provides better accuracy than CLIP, especially for fine-grained classification.
 
 ## Configuration
 
@@ -110,7 +110,7 @@ See `scripts/generate-embeddings.ts` for all available labels:
 ### Model
 
 ```typescript
-const MODEL_ID = 'Xenova/clip-vit-base-patch32';
+const MODEL_ID = 'onnx-community/siglip2-base-patch16-224-ONNX';
 ```
 
 ### Capture Interval
