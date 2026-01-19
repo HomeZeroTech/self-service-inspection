@@ -149,10 +149,6 @@ async function classify(imageDataUrl: string) {
     const output = await visionModel(imageInputs);
     const imageEmbedData = output.image_embeds;
 
-    // Debug: log the shape and type
-    console.log('image_embeds dims:', imageEmbedData.dims);
-    console.log('image_embeds type:', imageEmbedData.type);
-
     // The output is a Tensor - convert to array
     // Use tolist() to get a proper JS array, then flatten if needed
     let rawData: number[];
@@ -163,10 +159,6 @@ async function classify(imageDataUrl: string) {
     } else {
       rawData = Array.from(imageEmbedData.data as Float32Array);
     }
-
-    console.log('rawData length:', rawData.length);
-    console.log('expected embeddingDim:', embeddingDim);
-    console.log('first 5 values:', rawData.slice(0, 5));
 
     // If the embedding dimension doesn't match, we might have the wrong shape
     // Take only the first embeddingDim values (in case of batch dimension)
@@ -179,8 +171,6 @@ async function classify(imageDataUrl: string) {
       imageNorm += imageEmbedding[i] * imageEmbedding[i];
     }
     imageNorm = Math.sqrt(imageNorm);
-
-    console.log('imageNorm:', imageNorm);
 
     if (imageNorm === 0) {
       console.error('Image embedding norm is zero');
@@ -216,12 +206,6 @@ async function classify(imageDataUrl: string) {
       label,
       score: probabilities[i],
     }));
-
-    // Debug: log scores
-    console.log(
-      'scores:',
-      scores.map((s) => `${s.label}: ${(s.score * 100).toFixed(1)}%`)
-    );
 
     // Sort by score and take top 3
     const sorted = scores.sort((a, b) => b.score - a.score).slice(0, 3);
