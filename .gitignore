@@ -1,0 +1,16 @@
+node_modules/
+.DS_Store
+dist/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Transformers cache
+.cache/
+wasm/
+
+# Vite
+*.local
