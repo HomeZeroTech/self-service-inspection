@@ -14,33 +14,63 @@ const TEXT_MODEL_ID = MODEL_ID;
 
 // All possible labels for home inspection
 // Add all labels that will be used across all inspection steps
+// Includes both target objects AND negative prompts for better discrimination
 const ALL_LABELS = [
-  // Heating
-  'a radiator',
+  // === STEP 1: Radiator ===
+  // Target
   'a white metal radiator',
+  // Additional radiator variants
+  'a radiator',
   'a wall-mounted radiator',
   'a floor-mounted radiator',
   'a towel radiator',
   'underfloor heating',
+  // Negatives for radiator detection
+  'a door',
+  'a thermostat',
+  'a wall',
+  'a floor',
+  'a waterfall',
+  'a beach',
+  'a jungle',
+  'a window',
+  'a curtain',
+  'an air conditioning unit',
 
-  // Meters and utilities
+  // === STEP 2: Smart Energy Meter ===
+  // Target
+  'a smart energy meter with digital display',
+  // Additional meter variants
   'an electricity meter',
   'an electricity meter on a wall',
   'a smart meter',
   'a gas meter',
+  'a water meter',
   'a meter box',
   'an electrical panel',
   'a fuse box',
   'a circuit breaker panel',
+  // Negatives for meter detection
+  'pipes',
+  'wires',
+  'folding stairs',
 
-  // Water heating
+  // === STEP 3: Central Heating Boiler ===
+  // Target
+  'a central heating boiler unit',
+  // Additional boiler variants
   'a boiler',
   'a gas boiler unit',
   'a combi boiler',
   'a water heater',
   'a hot water cylinder',
   'a heat pump',
+  // Negatives for boiler detection
+  'an electric boiler',
+  'a washing machine',
+  'a tumble dryer',
 
+  // === General labels ===
   // Insulation
   'wall insulation',
   'loft insulation',
@@ -48,18 +78,14 @@ const ALL_LABELS = [
   'solid wall',
 
   // Windows and doors
-  'a window',
   'a double glazed window',
   'a single glazed window',
-  'a door',
   'a front door',
 
-  // General
+  // General (useful as negatives)
   'a person',
   'a room',
   'a ceiling',
-  'a wall',
-  'a floor',
 ];
 
 async function generateEmbeddings() {
@@ -128,9 +154,10 @@ export type LabelKey = keyof typeof LABEL_EMBEDDINGS.labels;
  */
 export function getEmbeddingsForLabels(labels: string[]): Record<string, number[]> {
   const result: Record<string, number[]> = {};
+  const allLabels = LABEL_EMBEDDINGS.labels as Record<string, readonly number[]>;
   for (const label of labels) {
-    if (LABEL_EMBEDDINGS.labels[label]) {
-      result[label] = LABEL_EMBEDDINGS.labels[label];
+    if (label in allLabels) {
+      result[label] = [...allLabels[label]];
     } else {
       console.warn(\`No pre-computed embedding for label: "\${label}"\`);
     }

@@ -22,12 +22,20 @@ interface InitMessage {
   labelEmbeddings: LabelEmbeddings;
 }
 
+interface UpdateLabelsMessage {
+  type: 'updateLabels';
+  targetLabel: string;
+  targetEmbedding: number[];
+  negativeLabels: { label: string; embedding: number[] }[];
+  threshold: number;
+}
+
 interface ClassifyMessage {
   type: 'classify';
   imageDataUrl: string;
 }
 
-type WorkerMessage = InitMessage | ClassifyMessage;
+type WorkerMessage = InitMessage | UpdateLabelsMessage | ClassifyMessage;
 
 interface ProgressUpdate {
   type: 'progress';
@@ -52,7 +60,19 @@ interface ClassificationResult {
   results: { label: string; score: number }[];
 }
 
-type WorkerResponse = ProgressUpdate | ReadyUpdate | ErrorUpdate | ClassificationResult;
+interface DetectionResult {
+  type: 'detection';
+  targetLabel: string;
+  targetScore: number;
+  isDetected: boolean;
+  allScores: { label: string; score: number }[];
+}
+
+interface LabelsUpdated {
+  type: 'labelsUpdated';
+}
+
+type WorkerResponse = ProgressUpdate | ReadyUpdate | ErrorUpdate | ClassificationResult | DetectionResult | LabelsUpdated;
 
 // Model state
 let processor: any = null;
@@ -63,13 +83,21 @@ let embeddingDim = 768; // SigLIP2 base uses 768
 let isInitialized = false;
 let isInitializing = false;
 
+// Detection mode state (for single-target detection with negative prompts)
+let detectionMode = false;
+let targetLabel = '';
+let detectionThreshold = 0.5;
+
 function postMessage(message: WorkerResponse) {
   self.postMessage(message);
 }
 
 async function initialize(data: InitMessage) {
+  console.log('[Worker] Initialize called:', { isInitialized, isInitializing, device: data.device });
+
   if (isInitialized || isInitializing) {
     if (isInitialized) {
+      console.log('[Worker] Already initialized, sending ready');
       postMessage({ type: 'ready' });
     }
     return;
@@ -79,6 +107,7 @@ async function initialize(data: InitMessage) {
 
   try {
     const { modelId, device, labels, labelEmbeddings } = data;
+    console.log('[Worker] Loading model:', modelId, 'device:', device);
 
     // Build label embedding matrix
     const validLabels = labels.filter((label) => labelEmbeddings[label]);
@@ -126,12 +155,37 @@ async function initialize(data: InitMessage) {
     isInitialized = true;
     isInitializing = false;
 
+    console.log('[Worker] Model loaded successfully');
     postMessage({ type: 'ready' });
   } catch (error) {
     isInitializing = false;
     const errorMessage = error instanceof Error ? error.message : 'Failed to load model';
+    console.error('[Worker] Model loading failed:', error);
     postMessage({ type: 'error', error: errorMessage });
   }
+}
+
+function updateLabels(data: UpdateLabelsMessage) {
+  // Update labels without reinitializing the model
+  detectionMode = true;
+  targetLabel = data.targetLabel;
+  detectionThreshold = data.threshold;
+
+  // Build new embedding matrix: target first, then negatives
+  const allLabels = [
+    { label: data.targetLabel, embedding: data.targetEmbedding },
+    ...data.negativeLabels,
+  ];
+
+  labelNames = allLabels.map((l) => l.label);
+  embeddingDim = data.targetEmbedding.length;
+  labelEmbeddingMatrix = new Float32Array(allLabels.length * embeddingDim);
+
+  allLabels.forEach((item, i) => {
+    labelEmbeddingMatrix!.set(item.embedding, i * embeddingDim);
+  });
+
+  postMessage({ type: 'labelsUpdated' });
 }
 
 async function classify(imageDataUrl: string) {
@@ -229,9 +283,28 @@ async function classify(imageDataUrl: string) {
       score: probabilities[i],
     }));
 
-    // Sort by score and take top 3
-    const sorted = scores.sort((a, b) => b.score - a.score).slice(0, 3);
-    postMessage({ type: 'result', results: sorted });
+    // Sort by score
+    const sorted = [...scores].sort((a, b) => b.score - a.score);
+
+    if (detectionMode) {
+      // In detection mode, report if target is detected
+      const targetScore = scores[0]?.score || 0; // Target is always first
+      const topMatch = sorted[0];
+      const isTargetTopMatch = topMatch?.label === targetLabel;
+      const isAboveThreshold = targetScore >= detectionThreshold;
+      const isDetected = isTargetTopMatch && isAboveThreshold;
+
+      postMessage({
+        type: 'detection',
+        targetLabel,
+        targetScore,
+        isDetected,
+        allScores: sorted.slice(0, 5), // Top 5 for debugging
+      });
+    } else {
+      // Original behavior: return top 3 results
+      postMessage({ type: 'result', results: sorted.slice(0, 3) });
+    }
   } catch (error) {
     console.error('Classification error:', error);
   }
@@ -244,6 +317,9 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   switch (data.type) {
     case 'init':
       await initialize(data);
+      break;
+    case 'updateLabels':
+      updateLabels(data);
       break;
     case 'classify':
       await classify(data.imageDataUrl);
