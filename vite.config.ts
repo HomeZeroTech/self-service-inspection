@@ -1,9 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 
 export default defineConfig({
   plugins: [
     react(),
+    basicSsl(),
     {
       name: 'configure-response-headers',
       configureServer: (server) => {
@@ -20,5 +22,8 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+  },
+  server: {
+    host: true, // Expose to network
   },
 });

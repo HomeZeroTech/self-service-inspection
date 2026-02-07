@@ -212,7 +212,9 @@ export function InspectionCamera({
         ref={webcamRef}
         audio={false}
         screenshotFormat="image/jpeg"
-        videoConstraints={true}
+        videoConstraints={{
+          facingMode: 'environment', // Use rear camera
+        }}
         onUserMedia={handleWebcamReady}
         onUserMediaError={handleWebcamError}
         style={{
