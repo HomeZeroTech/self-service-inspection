@@ -33,6 +33,7 @@ export interface SessionConfig {
   branding: {
     title: string;
     logoUrl?: string;
+    logoHeight?: number;
     primaryColor: string;
   };
   texts: {

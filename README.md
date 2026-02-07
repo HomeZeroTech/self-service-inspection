@@ -1,15 +1,11 @@
 # Digital Inspection
 
-Real-time webcam classification for home inspections using browser-based ML.
-
 ## Quick Start
 
 ```bash
 npm install
 npm run dev
 ```
-
-Open http://localhost:5173 in Chrome/Edge (WebGPU required).
 
 ## What It Does
 
@@ -34,7 +30,7 @@ Point your camera at objects and the app classifies them in real-time. Built for
 Labels are configured in [src/components/WebcamClassifier.tsx](src/components/WebcamClassifier.tsx):
 
 ```typescript
-const LABELS = ['a person', 'a radiator', 'an electricity meter', 'a boiler'];
+const LABELS = ["a person", "a radiator", "an electricity meter", "a boiler"];
 ```
 
 To add new labels:
@@ -46,27 +42,18 @@ To add new labels:
 ## Score Interpretation
 
 SigLIP2 scores are probability distributions across labels:
+
 - 50-80% = strong match
 - 20-40% = possible match
 - <20% = unlikely
 
 Scores won't reach 100% because probability is distributed across all candidates. SigLIP2 generally produces more confident scores than CLIP.
 
-## Requirements
-
-- Chrome 113+ or Edge 113+ (WebGPU)
-- Camera permissions
-- ~500MB GPU memory recommended
-
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `src/workers/visionClassifier.worker.ts` | ML inference (Web Worker) |
-| `src/hooks/useVisionClassifier.ts` | React hook for classifier |
-| `src/data/labelEmbeddings.ts` | Pre-computed text embeddings |
-| `scripts/generate-embeddings.ts` | Generates text embeddings |
-
-## License
-
-MIT
+| File                                     | Purpose                      |
+| ---------------------------------------- | ---------------------------- |
+| `src/workers/visionClassifier.worker.ts` | ML inference (Web Worker)    |
+| `src/hooks/useVisionClassifier.ts`       | React hook for classifier    |
+| `src/data/labelEmbeddings.ts`            | Pre-computed text embeddings |
+| `scripts/generate-embeddings.ts`         | Generates text embeddings    |

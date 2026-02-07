@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { ThemeProvider } from "./components/ThemeProvider";
 import { InspectionPage } from "./pages/InspectionPage";
 import { CompletionPage } from "./pages/CompletionPage";
 import { ErrorPage } from "./pages/ErrorPage";
@@ -7,7 +8,8 @@ import "./App.css";
 
 function App() {
     return (
-        <Routes>
+        <ThemeProvider>
+            <Routes>
             {/* Main inspection flow */}
             <Route path="/inspect/:sessionId" element={<InspectionPage />} />
             <Route path="/inspect/:sessionId/complete" element={<CompletionPage />} />
@@ -52,9 +54,10 @@ function App() {
             {/* Default redirect to a demo session */}
             <Route path="/" element={<Navigate to="/inspect/demo-session-123" replace />} />
 
-            {/* Catch all - redirect to error */}
-            <Route path="*" element={<Navigate to="/error" replace />} />
-        </Routes>
+                {/* Catch all - redirect to error */}
+                <Route path="*" element={<Navigate to="/error" replace />} />
+            </Routes>
+        </ThemeProvider>
     );
 }
 

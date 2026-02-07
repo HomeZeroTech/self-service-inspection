@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useInspectionStore } from '../store/inspectionStore';
 import { getSession, captureStep } from '../api/sessions';
 import { InspectionCamera } from '../components/inspection/InspectionCamera';
+import { Header } from '../components/branding/Header';
 
 interface InspectionPageProps {
   showFAQ?: boolean;
@@ -85,32 +86,36 @@ export function InspectionPage({ showFAQ = false }: InspectionPageProps) {
   if (showFAQ && session?.config.faqItems) {
     return (
       <div className="app">
-        <header style={{ padding: '1rem', borderBottom: '1px solid #eee' }}>
-          <h1 style={{ fontSize: '1.25rem', margin: 0 }}>
+        <Header
+          logoUrl={session.config.branding.logoUrl}
+          logoHeight={session.config.branding.logoHeight}
+        />
+        <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--gray-200)' }}>
+          <h1 style={{ fontSize: 'var(--text-base)', margin: 0 }}>
             {session.config.branding.title}
           </h1>
-        </header>
-        <main style={{ padding: '1rem' }}>
+        </div>
+        <main style={{ padding: 'var(--space-4)' }}>
           <h2>Frequently Asked Questions</h2>
-          <div style={{ marginTop: '1rem' }}>
+          <div style={{ marginTop: 'var(--space-4)' }}>
             {session.config.faqItems.map((item, index) => (
-              <div key={index} style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>
+              <div key={index} style={{ marginBottom: 'var(--space-6)' }}>
+                <h3 style={{ fontSize: 'var(--text-base)', marginBottom: 'var(--space-2)' }}>
                   {item.question}
                 </h3>
-                <p style={{ color: '#666', margin: 0 }}>{item.answer}</p>
+                <p style={{ color: 'var(--gray-600)', margin: 0 }}>{item.answer}</p>
               </div>
             ))}
           </div>
           <button
             onClick={() => navigate(`/inspect/${sessionId}`)}
             style={{
-              marginTop: '1rem',
-              padding: '0.75rem 1.5rem',
-              background: session.config.branding.primaryColor,
+              marginTop: 'var(--space-4)',
+              padding: 'var(--space-3) var(--space-6)',
+              background: 'var(--primary-500)',
               color: 'white',
               border: 'none',
-              borderRadius: '0.5rem',
+              borderRadius: 'var(--radius-lg)',
               cursor: 'pointer',
             }}
           >
@@ -125,18 +130,24 @@ export function InspectionPage({ showFAQ = false }: InspectionPageProps) {
   if (phase === 'error' || error) {
     return (
       <div className="app">
-        <main style={{ textAlign: 'center', padding: '2rem' }}>
-          <h1 style={{ color: '#ef4444' }}>Error</h1>
-          <p style={{ color: '#666' }}>{error || 'Something went wrong'}</p>
+        {session && (
+          <Header
+            logoUrl={session.config.branding.logoUrl}
+            logoHeight={session.config.branding.logoHeight}
+          />
+        )}
+        <main style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
+          <h1 style={{ color: 'var(--error-color)' }}>Error</h1>
+          <p style={{ color: 'var(--gray-600)' }}>{error || 'Something went wrong'}</p>
           <button
             onClick={() => window.location.reload()}
             style={{
-              marginTop: '1rem',
-              padding: '0.75rem 1.5rem',
-              background: '#2563eb',
+              marginTop: 'var(--space-4)',
+              padding: 'var(--space-3) var(--space-6)',
+              background: 'var(--primary-600)',
               color: 'white',
               border: 'none',
-              borderRadius: '0.5rem',
+              borderRadius: 'var(--radius-lg)',
               cursor: 'pointer',
             }}
           >
@@ -151,7 +162,13 @@ export function InspectionPage({ showFAQ = false }: InspectionPageProps) {
   if (phase === 'loading' || !session || !currentStep) {
     return (
       <div className="app">
-        <main style={{ textAlign: 'center', padding: '2rem' }}>
+        {session && (
+          <Header
+            logoUrl={session.config.branding.logoUrl}
+            logoHeight={session.config.branding.logoHeight}
+          />
+        )}
+        <main style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
           <p>{session?.config.texts.loadingMessage || 'Loading your inspection...'}</p>
         </main>
       </div>
@@ -160,36 +177,42 @@ export function InspectionPage({ showFAQ = false }: InspectionPageProps) {
 
   return (
     <div className="app" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <header
+      {/* Logo Header */}
+      <Header
+        logoUrl={session.config.branding.logoUrl}
+        logoHeight={session.config.branding.logoHeight}
+      />
+
+      {/* Secondary Header - Title and Step Counter */}
+      <div
         style={{
-          padding: '0.75rem 1rem',
-          borderBottom: '1px solid #eee',
+          padding: 'var(--space-3) var(--space-4)',
+          borderBottom: '1px solid var(--gray-200)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
       >
-        <h1 style={{ fontSize: '1rem', margin: 0 }}>
+        <h1 style={{ fontSize: 'var(--text-base)', margin: 0 }}>
           {session.config.branding.title}
         </h1>
-        <span style={{ fontSize: '0.875rem', color: '#666' }}>
+        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-600)' }}>
           Step {currentStep.stepNumber} of {currentStep.totalSteps}
         </span>
-      </header>
+      </div>
 
       {/* Progress bar */}
       <div
         style={{
           height: '4px',
-          background: '#e5e7eb',
+          background: 'var(--gray-200)',
         }}
       >
         <div
           style={{
             height: '100%',
             width: `${((currentStep.stepNumber - 1) / currentStep.totalSteps) * 100}%`,
-            background: session.config.branding.primaryColor,
+            background: 'var(--primary-500)',
             transition: 'width 0.3s ease',
           }}
         />
@@ -210,24 +233,24 @@ export function InspectionPage({ showFAQ = false }: InspectionPageProps) {
       {/* Bottom info panel */}
       <div
         style={{
-          padding: '1rem',
-          borderTop: '1px solid #eee',
+          padding: 'var(--space-4)',
+          borderTop: '1px solid var(--gray-200)',
           background: 'white',
         }}
       >
-        <h2 style={{ fontSize: '1.125rem', margin: '0 0 0.5rem 0' }}>
+        <h2 style={{ fontSize: 'var(--text-lg)', margin: '0 0 var(--space-2) 0' }}>
           Find: {currentStep.targetObject.displayName}
         </h2>
-        <p style={{ margin: 0, color: '#666', fontSize: '0.875rem' }}>
+        <p style={{ margin: 0, color: 'var(--gray-600)', fontSize: 'var(--text-sm)' }}>
           {currentStep.targetObject.description}
         </p>
         {phase === 'detecting' && currentScore > 0 && (
-          <div style={{ marginTop: '0.5rem' }}>
+          <div style={{ marginTop: 'var(--space-2)' }}>
             <div
               style={{
                 height: '4px',
-                background: '#e5e7eb',
-                borderRadius: '2px',
+                background: 'var(--gray-200)',
+                borderRadius: 'var(--radius-sm)',
                 overflow: 'hidden',
               }}
             >
@@ -235,12 +258,12 @@ export function InspectionPage({ showFAQ = false }: InspectionPageProps) {
                 style={{
                   height: '100%',
                   width: `${currentScore * 100}%`,
-                  background: currentScore >= currentStep.detectionThreshold ? '#22c55e' : '#f59e0b',
+                  background: currentScore >= currentStep.detectionThreshold ? 'var(--success-color)' : 'var(--warning-color)',
                   transition: 'width 0.2s ease',
                 }}
               />
             </div>
-            <span style={{ fontSize: '0.75rem', color: '#999' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>
               Detection: {Math.round(currentScore * 100)}%
             </span>
           </div>
@@ -248,17 +271,17 @@ export function InspectionPage({ showFAQ = false }: InspectionPageProps) {
         {phase === 'countdown' && (
           <div
             style={{
-              marginTop: '0.5rem',
-              fontSize: '1.5rem',
+              marginTop: 'var(--space-2)',
+              fontSize: 'var(--text-2xl)',
               fontWeight: 'bold',
-              color: session.config.branding.primaryColor,
+              color: 'var(--primary-500)',
             }}
           >
             Capturing in {countdownValue}...
           </div>
         )}
         {phase === 'uploading' && (
-          <div style={{ marginTop: '0.5rem', color: '#666' }}>
+          <div style={{ marginTop: 'var(--space-2)', color: 'var(--gray-600)' }}>
             Uploading photo...
           </div>
         )}
@@ -271,13 +294,13 @@ export function InspectionPage({ showFAQ = false }: InspectionPageProps) {
           style={{
             position: 'absolute',
             bottom: '100px',
-            right: '1rem',
-            padding: '0.5rem 1rem',
+            right: 'var(--space-4)',
+            padding: 'var(--space-2) var(--space-4)',
             background: 'rgba(0,0,0,0.7)',
             color: 'white',
             border: 'none',
-            borderRadius: '1rem',
-            fontSize: '0.75rem',
+            borderRadius: 'var(--radius-xl)',
+            fontSize: 'var(--text-xs)',
             cursor: 'pointer',
           }}
         >

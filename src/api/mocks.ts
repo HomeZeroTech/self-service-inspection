@@ -38,7 +38,9 @@ function createNegativeLabels(labels: string[]): NegativeLabel[] {
 const MOCK_CONFIG: SessionConfig = {
     branding: {
         title: "Home Energy Inspection",
-        primaryColor: "#2563eb",
+        logoUrl: "/src/assets/logo_home_zero.png",
+        logoHeight: 40,
+        primaryColor: "#0ea5e9",
     },
     texts: {
         loadingMessage: "Preparing your inspection...",
