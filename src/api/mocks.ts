@@ -73,6 +73,8 @@ const INSPECTION_STEPS: Omit<InspectionStep, "stepNumber" | "totalSteps">[] = [
             displayName: "Radiator",
             description:
                 "Point your camera at any radiator in your home. Make sure the full radiator is visible.",
+            subtitle:
+                "Richt je telefoon op de radiator, de foto wordt automatisch gemaakt.",
         },
         negativeLabels: createNegativeLabels([
             "a door",
@@ -99,6 +101,8 @@ const INSPECTION_STEPS: Omit<InspectionStep, "stepNumber" | "totalSteps">[] = [
             displayName: "Smart Energy Meter",
             description:
                 "Find your smart energy meter (usually near your fuse box) and point your camera at it.",
+            subtitle:
+                "Richt je telefoon op de meterkast, de foto wordt automatisch gemaakt.",
         },
         negativeLabels: createNegativeLabels([
             "a wall",
@@ -126,6 +130,8 @@ const INSPECTION_STEPS: Omit<InspectionStep, "stepNumber" | "totalSteps">[] = [
             displayName: "Central Heating Boiler",
             description:
                 "Locate your boiler (often in a utility cupboard or kitchen) and point your camera at it.",
+            subtitle:
+                "Richt je telefoon op de CV-ketel, de foto wordt automatisch gemaakt.",
         },
         negativeLabels: createNegativeLabels([
             "a floor",
@@ -199,6 +205,11 @@ export function mockGetSession(sessionId: string): SessionResponse {
                 : null,
         completedSteps: state.completedSteps,
         config: MOCK_CONFIG,
+        allSteps: INSPECTION_STEPS.map((step, index) => ({
+            stepNumber: index + 1,
+            displayName: step.targetObject.displayName,
+            subtitle: step.targetObject.subtitle,
+        })),
     };
 }
 

@@ -1,89 +1,95 @@
 // API Types for Digital Inspection
 
 export interface TargetObject {
-  label: string;
-  embedding: number[];
-  displayName: string;
-  description: string;
+    label: string;
+    embedding: number[];
+    displayName: string;
+    description: string;
+    subtitle?: string; // Subtitle shown on desktop steps overview
 }
 
 export interface NegativeLabel {
-  label: string;
-  embedding: number[];
+    label: string;
+    embedding: number[];
 }
 
 export interface InspectionStep {
-  stepId: string;
-  stepNumber: number;
-  totalSteps: number;
-  targetObject: TargetObject;
-  negativeLabels: NegativeLabel[];
-  detectionThreshold: number;
-  countdownSeconds: number;
+    stepId: string;
+    stepNumber: number;
+    totalSteps: number;
+    targetObject: TargetObject;
+    negativeLabels: NegativeLabel[];
+    detectionThreshold: number;
+    countdownSeconds: number;
 }
 
 export interface CompletedStep {
-  stepId: string;
-  imageUrl: string;
-  capturedAt: string;
-  detectedScore: number;
+    stepId: string;
+    imageUrl: string;
+    capturedAt: string;
+    detectedScore: number;
 }
 
 export interface SessionConfig {
-  branding: {
-    title: string;
-    logoUrl?: string;
-    logoHeight?: number;
-    primaryColor: string;
-  };
-  texts: {
-    loadingMessage: string;
-    successMessage: string;
-    errorMessage: string;
-  };
-  faqItems?: Array<{
-    question: string;
-    answer: string;
-  }>;
+    branding: {
+        title: string;
+        logoUrl?: string;
+        logoHeight?: number;
+        primaryColor: string;
+    };
+    texts: {
+        loadingMessage: string;
+        successMessage: string;
+        errorMessage: string;
+    };
+    faqItems?: Array<{
+        question: string;
+        answer: string;
+    }>;
 }
 
-export type SessionStatus = 'active' | 'completed' | 'expired';
+export type SessionStatus = "active" | "completed" | "expired";
 
 export interface SessionResponse {
-  sessionId: string;
-  status: SessionStatus;
-  currentStep: InspectionStep | null;
-  completedSteps: CompletedStep[];
-  config: SessionConfig;
+    sessionId: string;
+    status: SessionStatus;
+    currentStep: InspectionStep | null;
+    completedSteps: CompletedStep[];
+    config: SessionConfig;
+    allSteps?: Array<{
+        stepNumber: number;
+        displayName: string;
+        subtitle?: string;
+    }>;
 }
 
 export interface CaptureRequest {
-  imageData: string;
-  detectedScore: number;
-  capturedAt: string;
-  deviceInfo?: {
-    userAgent: string;
-    screenWidth: number;
-    screenHeight: number;
-  };
+    imageData: string;
+    detectedScore: number;
+    capturedAt: string;
+    deviceInfo?: {
+        userAgent: string;
+        screenWidth: number;
+        screenHeight: number;
+    };
 }
 
 export interface CaptureResponse {
-  success: boolean;
-  imageId: string;
-  nextStep: InspectionStep | null;
-  message?: string;
+    success: boolean;
+    imageId: string;
+    nextStep: InspectionStep | null;
+    message?: string;
 }
 
 export type APIErrorCode =
-  | 'SESSION_NOT_FOUND'
-  | 'SESSION_EXPIRED'
-  | 'STEP_ALREADY_COMPLETED'
-  | 'INVALID_IMAGE'
-  | 'SERVER_ERROR';
+    | "SESSION_NOT_FOUND"
+    | "SESSION_EXPIRED"
+    | "STEP_ALREADY_COMPLETED"
+    | "INVALID_IMAGE"
+    | "SERVER_ERROR";
 
 export interface APIError {
-  error: string;
-  code: APIErrorCode;
-  message: string;
+    error: string;
+    code: APIErrorCode;
+    message: string;
 }

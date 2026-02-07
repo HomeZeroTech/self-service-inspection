@@ -20,6 +20,7 @@ npm run preview  # Preview production build
 ### Regenerate Text Embeddings
 
 Required after adding new labels:
+
 ```bash
 npx tsx scripts/generate-embeddings.ts
 ```
@@ -38,6 +39,7 @@ Instead of loading both SigLIP2 vision and text models (~378MB total), we:
 ### Web Worker Pattern
 
 ML inference runs in `src/workers/visionClassifier.worker.ts` to keep main thread responsive:
+
 - Singleton worker instance prevents duplicate model loads
 - Message-based communication for init and classify operations
 - `src/hooks/useVisionClassifier.ts` manages worker lifecycle from React
@@ -54,11 +56,13 @@ ML inference runs in `src/workers/visionClassifier.worker.ts` to keep main threa
 ### Classification Labels
 
 Edit in `src/components/WebcamClassifier.tsx`:
+
 ```typescript
-const LABELS = ['a person', 'a radiator', 'an electricity meter', 'a boiler'];
+const LABELS = ["a person", "a radiator", "an electricity meter", "a boiler"];
 ```
 
 Labels must exist in `src/data/labelEmbeddings.ts`. To add new labels:
+
 1. Add to `ALL_LABELS` in `scripts/generate-embeddings.ts`
 2. Run `npx tsx scripts/generate-embeddings.ts`
 3. Update `LABELS` array in `WebcamClassifier.tsx`
@@ -78,9 +82,36 @@ Labels must exist in `src/data/labelEmbeddings.ts`. To add new labels:
 ## Score Interpretation
 
 SigLIP2 produces probability distributions, not binary scores:
+
 - 50-80% = strong match
 - 20-40% = possible match
 - Scores won't reach 100% because probability is distributed across all candidates
+
+## Desktop Redirect Screen
+
+The app is designed for mobile use (camera access required). Desktop users see a redirect screen instead of the camera interface.
+
+**Device Detection:**
+
+- `useDeviceType` hook detects mobile vs desktop (screen width < 768px OR mobile user agent)
+- Desktop users see `DesktopRedirectPage` component
+- Mobile users see normal inspection camera flow
+
+**Desktop Screen Features:**
+
+- **QR Code**: Dynamically generated with current URL
+    - Local development: Uses internal IP (via WebRTC) so phones on same WiFi can connect
+    - Production: Uses actual domain URL
+- **Step Preview**: Shows all inspection steps from `session.allSteps` API field
+    - Each step displays: step number, display name, and subtitle
+- **Lottie Animation**: Placeholder at `src/assets/animations/phone-scan.json`
+- **Speech Bubbles**: Friendly message guiding user to scan QR code
+
+**Implementation:**
+
+- Component: `src/pages/DesktopRedirectPage.tsx`
+- Hooks: `src/hooks/useDeviceType.ts`, `src/hooks/useQRCodeUrl.ts`
+- Libraries: `qrcode.react`, `lottie-react`
 
 ## White-Label Architecture
 
@@ -89,11 +120,13 @@ This application is designed as a white-label solution where all branding is con
 ### Design System
 
 **Color System:**
+
 - Gray scale (gray-50 through gray-900) defined in `src/styles/theme.css`
 - Primary color scale dynamically generated from API `primaryColor`
 - Theme injection via `useTheme` hook and `ThemeProvider` component
 
 **Design Tokens:**
+
 - Spacing: `var(--space-1)` through `var(--space-16)`
 - Typography: `var(--text-xs)` through `var(--text-3xl)`
 - Colors: `var(--gray-50)` through `var(--gray-900)`, `var(--primary-50)` through `var(--primary-900)`
@@ -101,6 +134,7 @@ This application is designed as a white-label solution where all branding is con
 - Border radius: `var(--radius-sm)` through `var(--radius-full)`
 
 **Usage:**
+
 ```tsx
 // Use CSS variables in inline styles
 <div style={{ padding: 'var(--space-4)', color: 'var(--gray-600)' }}>
@@ -118,6 +152,7 @@ This application is designed as a white-label solution where all branding is con
 ### Branding Configuration
 
 Branding is loaded from backend via `SessionConfig`:
+
 - **Logo**: `branding.logoUrl` - Falls back to `src/assets/logo_home_zero.png`
 - **Logo Height**: `branding.logoHeight` - Logo height in pixels (default: 40px)
 - **Primary Color**: `branding.primaryColor` - Hex color generates full scale (50-900)
@@ -135,12 +170,14 @@ Branding is loaded from backend via `SessionConfig`:
 ### Mock Development Mode
 
 Run locally without backend by omitting `VITE_API_BASE`:
+
 - Mock API automatically activates
 - Uses local logo asset (`/src/assets/logo_home_zero.png`)
 - Pre-configured inspection steps (radiator, energy meter, boiler)
 - See `src/api/mocks.ts` for mock data
 
 **Environment Variables:**
+
 ```bash
 # Optional: Backend API URL
 VITE_API_BASE=https://api.example.com
@@ -151,6 +188,7 @@ VITE_API_BASE=https://api.example.com
 ### Color Theming
 
 Primary color from API generates complete color scale:
+
 1. API provides `primaryColor` (e.g., "#0ea5e9")
 2. `generateColorScale()` creates shades 50-900 using HSL manipulation
 3. CSS variables injected into `:root` as `--primary-50` through `--primary-900`
@@ -161,6 +199,7 @@ Primary color from API generates complete color scale:
 ### Adding New Colors
 
 To add custom colors to the design system:
+
 1. Define in `src/styles/theme.css` as CSS variables
 2. Use throughout components via `var(--color-name)`
 3. Update `src/styles/tokens.ts` TypeScript definitions
@@ -168,6 +207,7 @@ To add custom colors to the design system:
 ### Backend API Documentation
 
 See [BACKEND_API.md](./BACKEND_API.md) for complete API documentation including:
+
 - Endpoint specifications
 - White-label configuration
 - Image handling

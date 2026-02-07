@@ -1,0 +1,199 @@
+.desktop-redirect-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--gray-50);
+}
+
+.desktop-redirect-content {
+    flex: 1;
+    display: flex;
+    gap: var(--space-8);
+    padding: var(--space-8);
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Left Panel - QR Code Section */
+.desktop-redirect-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.qr-card {
+    background: var(--primary-500);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-6);
+}
+
+.qr-code-wrapper {
+    background: white;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+}
+
+.qr-card-title {
+    color: white;
+    font-size: var(--text-xl);
+    font-weight: 600;
+    text-align: center;
+    margin: 0;
+}
+
+.qr-card-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: var(--text-sm);
+    text-align: center;
+    margin: 0;
+    max-width: 280px;
+    line-height: 1.5;
+}
+
+/* Speech Bubbles */
+.speech-section {
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    background: var(--gray-200);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-lg);
+}
+
+.speech-bubbles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.speech-bubble {
+    background: var(--primary-100);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--gray-700);
+    position: relative;
+}
+
+.speech-bubble:first-child::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 12px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid var(--primary-100);
+}
+
+.speech-bubble-cta {
+    background: var(--primary-500);
+    color: white;
+}
+
+.speech-bubble-cta::before {
+    border-right-color: var(--primary-500) !important;
+}
+
+/* Right Panel - Animation and Steps */
+.desktop-redirect-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.animation-card {
+    background: var(--gray-100);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.lottie-container {
+    width: 200px;
+    height: 200px;
+}
+
+.steps-section {
+    background: white;
+    border-radius: var(--radius-2xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+}
+
+.steps-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    margin: 0 0 var(--space-4) 0;
+    color: var(--gray-900);
+}
+
+.steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.step-item {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+}
+
+.step-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-lg);
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: var(--text-sm);
+}
+
+.step-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.step-label {
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.step-name {
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.step-subtitle {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+    margin: 0;
+}
