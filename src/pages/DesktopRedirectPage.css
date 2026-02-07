@@ -8,16 +8,18 @@
 .desktop-redirect-content {
     flex: 1;
     display: flex;
-    gap: var(--space-8);
+    justify-content: center;
+    gap: 8vw;
     padding: var(--space-8);
-    max-width: 1200px;
+    max-width: min(1800px, 92vw);
     margin: 0 auto;
     width: 100%;
 }
 
 /* Left Panel - QR Code Section */
 .desktop-redirect-left {
-    flex: 1;
+    width: 550px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
@@ -129,7 +131,8 @@
 
 /* Right Panel - Unified Card */
 .desktop-redirect-right {
-    flex: 1;
+    width: 550px;
+    flex-shrink: 0;
 }
 
 .inspection-overview-card {
