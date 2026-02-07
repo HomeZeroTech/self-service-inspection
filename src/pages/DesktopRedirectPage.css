@@ -2,7 +2,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--gray-50);
+    background: white;
 }
 
 .desktop-redirect-content {
@@ -25,7 +25,7 @@
 
 .qr-card {
     background: var(--primary-500);
-    border-radius: var(--radius-2xl);
+    border-radius: 24px;
     padding: var(--space-8);
     display: flex;
     flex-direction: column;
@@ -60,19 +60,27 @@
 .speech-section {
     display: flex;
     gap: var(--space-4);
-    align-items: flex-start;
+    align-items: flex-end;
 }
 
 .avatar {
     width: 48px;
     height: 48px;
     border-radius: var(--radius-full);
-    background: var(--gray-200);
+    background: var(--primary-500);
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--text-lg);
+    padding: 2px;
+    overflow: hidden;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-full);
 }
 
 .speech-bubbles {
@@ -82,11 +90,11 @@
 }
 
 .speech-bubble {
-    background: var(--primary-100);
+    background: var(--primary-500);
     border-radius: var(--radius-lg);
     padding: var(--space-3) var(--space-4);
     font-size: var(--text-sm);
-    color: var(--gray-700);
+    color: white;
     position: relative;
 }
 
@@ -94,12 +102,12 @@
     content: "";
     position: absolute;
     left: -8px;
-    top: 12px;
+    bottom: 12px;
     width: 0;
     height: 0;
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
-    border-right: 8px solid var(--primary-100);
+    border-right: 8px solid var(--primary-500);
 }
 
 .speech-bubble-cta {
@@ -108,68 +116,99 @@
 }
 
 .speech-bubble-cta::before {
-    border-right-color: var(--primary-500) !important;
+    content: "";
+    position: absolute;
+    left: -8px;
+    bottom: 12px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid var(--primary-500);
 }
 
-/* Right Panel - Animation and Steps */
+/* Right Panel - Unified Card */
 .desktop-redirect-right {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-6);
 }
 
-.animation-card {
-    background: var(--gray-100);
-    border-radius: var(--radius-2xl);
-    padding: var(--space-8);
+.inspection-overview-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.animation-section {
+    background: white;
+    padding: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 200px;
+    border-bottom: 1px solid var(--gray-200);
 }
 
 .lottie-container {
-    width: 200px;
-    height: 200px;
+    width: 100%;
+    height: 100%;
+    line-height: 0;
 }
 
 .steps-section {
-    background: white;
-    border-radius: var(--radius-2xl);
-    padding: var(--space-6);
-    box-shadow: var(--shadow-sm);
+    padding: 24px;
+    flex: 1;
 }
 
 .steps-title {
-    font-size: var(--text-lg);
-    font-weight: 600;
-    margin: 0 0 var(--space-4) 0;
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin: 0 0 var(--space-8) 0;
     color: var(--gray-900);
 }
 
 .steps-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-8);
+    position: relative;
+}
+
+/* Vertical line for steps */
+.steps-list::before {
+    content: "";
+    position: absolute;
+    left: 16px;
+    top: 32px;
+    bottom: 32px;
+    width: 1px;
+    background: var(--gray-200);
+    z-index: 0;
 }
 
 .step-item {
     display: flex;
-    gap: var(--space-3);
+    gap: var(--space-4);
     align-items: flex-start;
+    position: relative;
+    z-index: 1;
 }
 
 .step-icon {
     width: 32px;
     height: 32px;
-    border-radius: var(--radius-lg);
-    background: var(--gray-100);
+    border-radius: var(--radius-md);
+    background: white;
+    border: 1px solid var(--gray-200);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     font-size: var(--text-sm);
+    z-index: 2;
 }
 
 .step-content {

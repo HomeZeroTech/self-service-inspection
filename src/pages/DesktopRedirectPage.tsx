@@ -4,6 +4,7 @@ import { Header } from "../components/branding/Header";
 import { useQRCodeUrl } from "../hooks/useQRCodeUrl";
 import type { SessionResponse } from "../api/types";
 import phoneAnimationData from "../assets/animations/phone-scan.json";
+import avatarImg from "../assets/avatar.png";
 import "./DesktopRedirectPage.css";
 
 interface DesktopRedirectPageProps {
@@ -97,7 +98,9 @@ export function DesktopRedirectPage({ session }: DesktopRedirectPageProps) {
 
                     {/* Speech bubbles section */}
                     <div className="speech-section">
-                        <div className="avatar">👤</div>
+                        <div className="avatar">
+                            <img src={avatarImg} alt="Avatar" />
+                        </div>
                         <div className="speech-bubbles">
                             <div className="speech-bubble">
                                 Hallo! Ik ben Stijn van HeatTransformers. Deze
@@ -114,42 +117,46 @@ export function DesktopRedirectPage({ session }: DesktopRedirectPageProps) {
 
                 {/* Right Panel - Animation and Steps */}
                 <div className="desktop-redirect-right">
-                    <div className="animation-card">
-                        <div className="lottie-container">
-                            <Lottie
-                                animationData={phoneAnimationData}
-                                loop={true}
-                                autoplay={true}
-                            />
+                    <div className="inspection-overview-card">
+                        <div className="animation-section">
+                            <div className="lottie-container">
+                                <Lottie
+                                    animationData={phoneAnimationData}
+                                    loop={true}
+                                    autoplay={true}
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="steps-section">
-                        <h3 className="steps-title">Stappen door het huis</h3>
-                        <div className="steps-list">
-                            {steps.map((step, index) => (
-                                <div
-                                    key={step.stepNumber}
-                                    className="step-item"
-                                >
-                                    <div className="step-icon">
-                                        {stepIcons[index] || "📷"}
+                        <div className="steps-section">
+                            <h3 className="steps-title">
+                                Stappen door het huis
+                            </h3>
+                            <div className="steps-list">
+                                {steps.map((step, index) => (
+                                    <div
+                                        key={step.stepNumber}
+                                        className="step-item"
+                                    >
+                                        <div className="step-icon">
+                                            {stepIcons[index] || "📷"}
+                                        </div>
+                                        <div className="step-content">
+                                            <span className="step-label">
+                                                STAP {step.stepNumber}
+                                            </span>
+                                            <h4 className="step-name">
+                                                {step.displayName}
+                                            </h4>
+                                            {step.subtitle && (
+                                                <p className="step-subtitle">
+                                                    {step.subtitle}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="step-content">
-                                        <span className="step-label">
-                                            STAP {step.stepNumber}
-                                        </span>
-                                        <h4 className="step-name">
-                                            {step.displayName}
-                                        </h4>
-                                        {step.subtitle && (
-                                            <p className="step-subtitle">
-                                                {step.subtitle}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

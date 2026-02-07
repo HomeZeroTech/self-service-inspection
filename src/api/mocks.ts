@@ -39,8 +39,8 @@ const MOCK_CONFIG: SessionConfig = {
     branding: {
         title: "Home Energy Inspection",
         logoUrl: "/src/assets/logo_home_zero.png",
-        logoHeight: 40,
-        primaryColor: "#0ea5e9",
+        logoHeight: 32,
+        primaryColor: "#264ae5",
     },
     texts: {
         loadingMessage: "Preparing your inspection...",
