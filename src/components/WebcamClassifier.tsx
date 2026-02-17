@@ -17,8 +17,8 @@ const LABELS = [
     "a gas boiler unit",
 ];
 
-// Using SigLIP2 vision model only (~95MB) - 224 fixed resolution for better compatibility
-const MODEL_ID = "onnx-community/siglip2-base-patch16-224-ONNX";
+// Using MobileClip vision model (~37MB) - optimized for mobile devices
+const MODEL_ID = "Xenova/mobileclip_s2";
 const CAPTURE_INTERVAL_MS = 500;
 
 // Get pre-computed embeddings for our labels

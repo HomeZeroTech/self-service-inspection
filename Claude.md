@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Real-time webcam image classification using WebGPU-accelerated ML inference in the browser. Designed for home inspection workflows (identifying radiators, meter boxes, boilers, etc.).
 
-**Tech Stack**: Vite + React 18 + TypeScript, @huggingface/transformers v3, SigLIP2 vision model
+**Tech Stack**: Vite + React 18 + TypeScript, @huggingface/transformers v3, MobileClip vision model
 
 ## Commands
 
@@ -29,11 +29,11 @@ npx tsx scripts/generate-embeddings.ts
 
 ### Vision-Only Inference Pattern
 
-Instead of loading both SigLIP2 vision and text models (~378MB total), we:
+Instead of loading both MobileClip vision and text models, we:
 
 1. Pre-compute text embeddings at build time (`scripts/generate-embeddings.ts`)
 2. Store embeddings in `src/data/labelEmbeddings.ts`
-3. Load only vision model at runtime (~95MB)
+3. Load only vision model at runtime (~37MB with INT8 quantization)
 4. Compare embeddings using cosine similarity with temperature scaling
 
 ### Web Worker Pattern
@@ -69,8 +69,9 @@ Labels must exist in `src/data/labelEmbeddings.ts`. To add new labels:
 
 ### Model Configuration
 
-- Model: `onnx-community/siglip2-base-patch16-224-ONNX`
+- Model: `Xenova/mobileclip_s2`
 - Quantization: 8-bit (`dtype: 'q8'`)
+- Embedding dimension: 512
 - Capture interval: 500ms
 
 ## Browser Requirements
@@ -81,7 +82,7 @@ Labels must exist in `src/data/labelEmbeddings.ts`. To add new labels:
 
 ## Score Interpretation
 
-SigLIP2 produces probability distributions, not binary scores:
+MobileClip produces probability distributions, not binary scores:
 
 - 50-80% = strong match
 - 20-40% = possible match

@@ -1,6 +1,6 @@
 import {
   AutoProcessor,
-  SiglipVisionModel,
+  CLIPVisionModelWithProjection,
   RawImage,
   env,
 } from '@huggingface/transformers';
@@ -79,7 +79,7 @@ let processor: any = null;
 let visionModel: any = null;
 let labelEmbeddingMatrix: Float32Array | null = null;
 let labelNames: string[] = [];
-let embeddingDim = 768; // SigLIP2 base uses 768
+let embeddingDim = 512; // MobileClip uses 512
 let isInitialized = false;
 let isInitializing = false;
 
@@ -143,9 +143,9 @@ async function initialize(data: InitMessage) {
     // with current Transformers.js version (uses standard SiglipImageProcessor)
     const [loadedProcessor, loadedVisionModel] = await Promise.all([
       AutoProcessor.from_pretrained(modelId),
-      SiglipVisionModel.from_pretrained(modelId, {
+      CLIPVisionModelWithProjection.from_pretrained(modelId, {
         device,
-        dtype: 'q8', // Using q8 (int8) for 224 model
+        dtype: 'q8', // Using q8 (int8) for smaller model size
         progress_callback: progressCallback,
       }),
     ]);
@@ -204,9 +204,9 @@ async function classify(imageDataUrl: string) {
     // List available output keys for debugging
     console.log('Model output keys:', Object.keys(output));
 
-    // SiglipVisionModel usually outputs pooler_output (projected embedding)
-    // Some models might use image_embeds
-    const imageEmbedData = output.pooler_output || output.image_embeds;
+    // CLIPVisionModelWithProjection outputs image_embeds (projected embedding)
+    // Fall back to pooler_output for compatibility
+    const imageEmbedData = output.image_embeds || output.pooler_output;
 
     if (!imageEmbedData) {
       console.error('No embedding found in model output. Available keys:', Object.keys(output));

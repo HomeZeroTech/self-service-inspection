@@ -9,7 +9,7 @@ import { useInspectionStore } from '../../store/inspectionStore';
 import { LoadingProgress } from '../LoadingProgress';
 import type { TargetObject, NegativeLabel } from '../../api/types';
 
-const MODEL_ID = 'onnx-community/siglip2-base-patch16-224-ONNX';
+const MODEL_ID = 'Xenova/mobileclip_s2';
 const SUSTAINED_DETECTION_MS = 1000;
 
 interface InspectionCameraProps {

@@ -23,7 +23,7 @@ function App() {
                 <div className="app">
                     <header>
                         <h1>Real-Time Image Classification</h1>
-                        <p>WebGPU-accelerated zero-shot classification with SigLIP 2</p>
+                        <p>WebGPU-accelerated zero-shot classification with MobileClip</p>
                     </header>
                     <main>
                         <WebcamClassifier />
@@ -40,11 +40,11 @@ function App() {
                             </a>{" "}
                             &{" "}
                             <a
-                                href="https://huggingface.co/onnx-community/siglip2-base-patch16-224-ONNX"
+                                href="https://huggingface.co/Xenova/mobileclip_s2"
                                 target="_blank"
                                 rel="noopener"
                             >
-                                SigLIP 2 (224-Res)
+                                MobileClip S2
                             </a>
                         </p>
                     </footer>

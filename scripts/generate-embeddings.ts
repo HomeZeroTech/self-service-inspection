@@ -6,10 +6,10 @@
  * instead of both vision + text models (~378MB).
  */
 
-import { AutoTokenizer, SiglipTextModel } from '@huggingface/transformers';
+import { AutoTokenizer, CLIPTextModelWithProjection } from '@huggingface/transformers';
 
-// SigLIP2 base model - 224 fixed resolution
-const MODEL_ID = 'onnx-community/siglip2-base-patch16-224-ONNX';
+// MobileClip S2 - optimized for mobile devices (~37MB vs ~95MB)
+const MODEL_ID = 'Xenova/mobileclip_s2';
 const TEXT_MODEL_ID = MODEL_ID;
 
 // All possible labels for home inspection
@@ -92,7 +92,7 @@ async function generateEmbeddings() {
   console.log('Loading tokenizer and text model for:', MODEL_ID);
 
   const tokenizer = await AutoTokenizer.from_pretrained(TEXT_MODEL_ID);
-  const textModel = await SiglipTextModel.from_pretrained(TEXT_MODEL_ID, {
+  const textModel = await CLIPTextModelWithProjection.from_pretrained(TEXT_MODEL_ID, {
     dtype: 'q8',
   });
 
@@ -101,14 +101,14 @@ async function generateEmbeddings() {
   const embeddings: Record<string, number[]> = {};
 
   for (const label of ALL_LABELS) {
-    // SigLIP2 uses lowercase text and max_length=64
+    // CLIP uses lowercase text and max_length=77
     const text = label.toLowerCase();
-    const inputs = await tokenizer(text, { padding: 'max_length', max_length: 64, truncation: true });
+    const inputs = await tokenizer(text, { padding: 'max_length', max_length: 77, truncation: true });
     
     const output = await textModel(inputs);
 
-    // Get the pooled output embedding and convert to array
-    const embedding = Array.from(output.pooler_output.data as Float32Array);
+    // Get the text embedding and convert to array
+    const embedding = Array.from(output.text_embeds.data as Float32Array);
 
     // Normalize the embedding for cosine similarity
     const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
